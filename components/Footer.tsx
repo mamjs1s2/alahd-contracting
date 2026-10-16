@@ -66,10 +66,10 @@ export default function Footer() {
           <div>
             <div className="mb-5 flex items-center gap-3">
               <span className="relative h-11 w-11 flex-none overflow-hidden rounded-xl bg-white/5 p-1 border border-white/10">
-                <Image src="/images/brand/alahd-logo.png" alt="شعار شركة العهد للمقاولات" fill className="object-contain" />
+                <Image src="/images/brand/alahd-logo.png" alt="شعار شركة العهد الصناعي للمقاولات العامة" fill className="object-contain" />
               </span>
               <div>
-                <span className="font-display text-[18px] font-black tracking-tight text-white block">العهد للمقاولات</span>
+                <span className="font-display text-[18px] font-black tracking-tight text-white block">العهد الصناعي للمقاولات العامة</span>
                 <span dir="ltr" className="text-[11px] text-amber tracking-wider font-semibold block">AL AHD Industrial General Contracting</span>
               </div>
             </div>
@@ -148,10 +148,10 @@ export default function Footer() {
 
         {/* الشريط السفلي للحقوق */}
         <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 text-[12.5px] text-slate-500 md:flex-row">
-          <p>© {currentYear} شركة العهد للمقاولات العامة. جميع الحقوق محفوظة.</p>
+          <p>© {currentYear} شركة العهد الصناعي للمقاولات العامة. جميع الحقوق محفوظة.</p>
           <div className="flex items-center gap-2">
             <span>تصميم وتنفيذ رقمي —</span>
-            <span className="text-slate-400 font-medium">AL AHD Contracting</span>
+            <span className="text-slate-400 font-medium">AL AHD Industrial General Contracting</span>
           </div>
         </div>
       </div>

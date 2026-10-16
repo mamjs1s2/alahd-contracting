@@ -1,10 +1,23 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, LayoutGroup, useMotionValue, useSpring } from "framer-motion";
 import Reveal from "./Reveal";
-import { CATEGORIES, PROJECTS, Category, Project } from "@/data/projects";
+import { CATEGORIES } from "@/data/projects";
+
+export interface DBProject {
+  id: string;
+  title: string;
+  category: string;
+  description: string | null;
+  image_url: string;
+  images?: string[];
+  featured?: boolean;
+  client?: string;
+  loc?: string;
+  meta?: string;
+}
 
 function SiteIcon({ className = "" }: { className?: string }) {
   return (
@@ -14,9 +27,10 @@ function SiteIcon({ className = "" }: { className?: string }) {
   );
 }
 
-function ProjectCard({ p, onOpen, index }: { p: Project; onOpen: (p: Project) => void; index: number }) {
-  const catLabel = CATEGORIES.find((c) => c.key === p.cat)?.label ?? "";
-  const hasImg = p.images.length > 0;
+function ProjectCard({ p, onOpen, index }: { p: DBProject; onOpen: (p: DBProject) => void; index: number }) {
+  const catLabel = CATEGORIES.find((c) => c.key === p.category || c.label === p.category)?.label ?? p.category;
+  const mainImage = p.images && p.images.length > 0 ? p.images[0] : p.image_url;
+  const hasImg = Boolean(mainImage);
 
   const cardRef = useRef<HTMLDivElement>(null);
   const rx = useMotionValue(0);
@@ -32,6 +46,7 @@ function ProjectCard({ p, onOpen, index }: { p: Project; onOpen: (p: Project) =>
     ry.set(px * 8);
     rx.set(-py * 8);
   };
+
   const handleLeave = () => {
     rx.set(0);
     ry.set(0);
@@ -55,9 +70,10 @@ function ProjectCard({ p, onOpen, index }: { p: Project; onOpen: (p: Project) =>
       <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-navy-soft to-navy">
         {hasImg ? (
           <Image
-            src={p.images[0]}
+            src={mainImage}
             alt={p.title}
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
         ) : (
@@ -67,14 +83,12 @@ function ProjectCard({ p, onOpen, index }: { p: Project; onOpen: (p: Project) =>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-navy/90 via-navy/20 to-transparent" />
         
-        {/* شارة التصنيف */}
         <span className="absolute top-4 right-4 rounded-full bg-navy/80 backdrop-blur-md px-3.5 py-1.5 text-[11.5px] font-bold text-amber border border-white/10 shadow-sm">
           {catLabel}
         </span>
 
-        {/* شارة الموقع الجغرافي */}
         <span className="absolute bottom-4 right-4 flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-md px-3.5 py-1.5 text-[11.5px] font-bold text-navy shadow-lg">
-          <span className="text-amber-dim">📍</span> {p.loc}
+          <span className="text-amber-dim">📍</span> {p.loc || "مصر"}
         </span>
       </div>
 
@@ -82,15 +96,17 @@ function ProjectCard({ p, onOpen, index }: { p: Project; onOpen: (p: Project) =>
         <h4 className="mb-2.5 text-[18px] font-bold leading-snug text-navy font-display">{p.title}</h4>
         {p.client && <div className="mb-3 text-[13.5px] font-semibold text-amber-dim">{p.client}</div>}
         <div className="mt-auto border-t border-black/5 pt-4 text-[13px] text-slate-500 font-medium">
-          {hasImg ? p.meta : <span className="font-bold text-amber-dim">الصور والتفاصيل قيد الإضافة قريبًا</span>}
+          {p.meta || p.description || "مشروع مقاولات صناعية منفذ بأعلى معايير الجودة."}
         </div>
       </div>
     </motion.div>
   );
 }
 
-function FeaturedProject({ project, onOpen }: { project: Project; onOpen: (p: Project) => void }) {
-  const catLabel = CATEGORIES.find((c) => c.key === project.cat)?.label ?? "";
+function FeaturedProject({ project, onOpen }: { project: DBProject; onOpen: (p: DBProject) => void }) {
+  const catLabel = CATEGORIES.find((c) => c.key === project.category || c.label === project.category)?.label ?? project.category;
+  const mainImage = project.images && project.images.length > 0 ? project.images[0] : project.image_url;
+
   return (
     <Reveal className="mb-12">
       <div
@@ -98,11 +114,13 @@ function FeaturedProject({ project, onOpen }: { project: Project; onOpen: (p: Pr
         className="group grid cursor-pointer grid-cols-1 overflow-hidden rounded-3xl border border-black/10 bg-white md:grid-cols-2 shadow-sm hover:shadow-xl transition-all duration-300"
       >
         <div className="relative aspect-[16/10] overflow-hidden bg-navy md:aspect-auto">
-          {project.images[0] && (
+          {mainImage && (
             <Image
-              src={project.images[0]}
+              src={mainImage}
               alt={project.title}
               fill
+              priority
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover transition-transform duration-700 group-hover:scale-105"
             />
           )}
@@ -119,10 +137,12 @@ function FeaturedProject({ project, onOpen }: { project: Project; onOpen: (p: Pr
             {project.title}
           </h3>
           {project.client && <div className="mb-2 text-[14.5px] font-semibold text-amber-dim">{project.client}</div>}
-          <div className="mb-4 text-[14px] text-slate-500 font-medium">📍 {project.loc}</div>
-          <p className="mb-8 max-w-lg text-[15px] leading-relaxed text-slate-600">{project.desc}</p>
+          <div className="mb-4 text-[14px] text-slate-500 font-medium">📍 {project.loc || "جمهورية مصر العربية"}</div>
+          <p className="mb-8 max-w-lg text-[15px] leading-relaxed text-slate-600 line-clamp-3">
+            {project.description || "تم تنفيذ هذا المشروع بأعلى المواصفات الهندسية والهيكلية مع التسليم الكامل."}
+          </p>
           <span className="inline-flex w-fit items-center gap-2 text-[14.5px] font-bold text-navy transition-transform group-hover:translate-x-[-6px]">
-            عرض الصور والتفاصيل الكاملة
+            عرض التفاصيل الكاملة
             <span aria-hidden>←</span>
           </span>
         </div>
@@ -131,13 +151,58 @@ function FeaturedProject({ project, onOpen }: { project: Project; onOpen: (p: Pr
   );
 }
 
-function ProjectModal({ project, onClose }: { project: Project; onClose: () => void }) {
+function ProjectModal({ project, onClose }: { project: DBProject; onClose: () => void }) {
   const [idx, setIdx] = useState(0);
-  const hasImg = project.images.length > 0;
-  const catLabel = CATEGORIES.find((c) => c.key === project.cat)?.label ?? "";
+  const [direction, setDirection] = useState(0);
 
-  const prev = () => setIdx((i) => (i - 1 + project.images.length) % project.images.length);
-  const next = () => setIdx((i) => (i + 1) % project.images.length);
+  const projectImages = project.images && project.images.length > 0 
+    ? project.images 
+    : (project.image_url ? [project.image_url] : []);
+
+  const hasImg = projectImages.length > 0;
+  const catLabel = CATEGORIES.find((c) => c.key === project.category || c.label === project.category)?.label ?? project.category;
+
+  const prev = () => {
+    setDirection(-1);
+    setIdx((i) => (i - 1 + projectImages.length) % projectImages.length);
+  };
+
+  const next = () => {
+    setDirection(1);
+    setIdx((i) => (i + 1) % projectImages.length);
+  };
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+      if (event.key === "ArrowLeft") next();
+      if (event.key === "ArrowRight") prev();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose, projectImages.length]);
+
+  const variants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 300 : -300,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      x: direction < 0 ? 300 : -300,
+      opacity: 0,
+    }),
+  };
 
   return (
     <motion.div
@@ -145,7 +210,7 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-navy/90 p-4 backdrop-blur-md md:p-6"
+      className="fixed inset-0 z-[200] flex items-start justify-center overflow-y-auto bg-navy/90 p-3 backdrop-blur-md md:items-center md:p-6"
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -153,106 +218,177 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[90vh] w-full max-w-[1050px] flex-col overflow-hidden rounded-3xl bg-white shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="project-modal-title"
+        className="my-auto w-full max-w-[920px] overflow-hidden rounded-2xl bg-white shadow-2xl md:rounded-3xl"
       >
-        {/* شاشة عرض الصور الرئيسية */}
-        <div className="relative aspect-[16/9] flex-none bg-slate-950">
-          <button
-            onClick={onClose}
-            aria-label="إغلاق"
-            className="absolute left-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md transition-all hover:bg-amber hover:text-navy shadow-lg"
-          >
-            ✕
-          </button>
+        <div className="max-h-[92vh] overflow-y-auto overscroll-contain">
           
-          {hasImg ? (
-            <>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, scale: 1.02 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.3 }}
-                  className="absolute inset-0"
-                >
-                  <Image src={project.images[idx]} alt={project.title} fill className="object-contain" priority />
-                </motion.div>
-              </AnimatePresence>
+          {/* المعرض التفاعلي للصور المجهزة بالسحب والتحريك (Swipe / Drag) */}
+          <div className="relative h-[38vh] min-h-[220px] max-h-[520px] bg-slate-950 md:h-[48vh] select-none overflow-hidden">
+            <button
+              onClick={onClose}
+              aria-label="إغلاق"
+              className="absolute left-3 top-3 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md transition-all hover:bg-amber hover:text-navy md:left-4 md:top-4"
+            >
+              ✕
+            </button>
 
-              {project.images.length > 1 && (
-                <>
-                  <button
-                    onClick={prev}
-                    aria-label="السابق"
-                    className="absolute right-4 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-xl text-white backdrop-blur-md transition hover:bg-amber hover:text-navy shadow-lg z-10"
+            {hasImg ? (
+              <>
+                <AnimatePresence initial={false} custom={direction} mode="popLayout">
+                  <motion.div
+                    key={idx}
+                    custom={direction}
+                    variants={variants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{
+                      x: { type: "spring", stiffness: 300, damping: 30 },
+                      opacity: { duration: 0.2 },
+                    }}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.8}
+                    onDragEnd={(e, { offset, velocity }) => {
+                      const swipe = Math.abs(offset.x) * velocity.x;
+                      if (swipe < -10000 || offset.x < -100) {
+                        next();
+                      } else if (swipe > 10000 || offset.x > 100) {
+                        prev();
+                      }
+                    }}
+                    className="absolute inset-0 cursor-grab active:cursor-grabbing flex items-center justify-center"
                   >
-                    ›
-                  </button>
-                  <button
-                    onClick={next}
-                    aria-label="التالي"
-                    className="absolute left-4 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-xl text-white backdrop-blur-md transition hover:bg-amber hover:text-navy shadow-lg z-10"
-                  >
-                    ‹
-                  </button>
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-4 py-1.5 text-[13px] font-bold text-white backdrop-blur-md">
-                    {idx + 1} / {project.images.length}
-                  </div>
-                </>
-              )}
-            </>
-          ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-400">
-              <SiteIcon className="h-10 w-10" />
-              <span>سيتم إضافة صور هذا المشروع قريبًا</span>
+                    <Image
+                      src={projectImages[idx]}
+                      alt={`${project.title} - صورة ${idx + 1}`}
+                      fill
+                      className="object-contain pointer-events-none"
+                      priority
+                      sizes="(max-width: 920px) 100vw, 920px"
+                    />
+                  </motion.div>
+                </AnimatePresence>
+
+                {projectImages.length > 1 && (
+                  <>
+                    <button
+                      onClick={prev}
+                      aria-label="السابق"
+                      className="absolute right-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-xl text-white backdrop-blur-md transition hover:bg-amber hover:text-navy md:right-5 md:h-12 md:w-12"
+                    >
+                      ›
+                    </button>
+                    <button
+                      onClick={next}
+                      aria-label="التالي"
+                      className="absolute left-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-xl text-white backdrop-blur-md transition hover:bg-amber hover:text-navy md:left-5 md:h-12 md:w-12"
+                    >
+                      ‹
+                    </button>
+                    <div className="absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/60 px-4 py-1.5 text-[13px] font-bold text-white backdrop-blur-md">
+                      {idx + 1} / {projectImages.length}
+                    </div>
+                  </>
+                )}
+              </>
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-400">
+                <SiteIcon className="h-10 w-10" />
+                <span>سيتم إضافة صور هذا المشروع قريبًا</span>
+              </div>
+            )}
+          </div>
+
+          {/* شريط الصور المصغرة (Thumbnails) */}
+          {hasImg && projectImages.length > 1 && (
+            <div className="flex gap-3 overflow-x-auto border-b border-slate-200 bg-slate-50 p-3 md:p-4">
+              {projectImages.map((src, i) => (
+                <button
+                  key={src}
+                  onClick={() => {
+                    setDirection(i > idx ? 1 : -1);
+                    setIdx(i);
+                  }}
+                  className={`relative h-16 w-24 flex-none overflow-hidden rounded-lg border-2 transition-all md:h-20 md:w-28 ${
+                    i === idx ? "border-amber opacity-100 scale-105" : "border-transparent opacity-60 hover:opacity-100"
+                  }`}
+                  aria-label={`عرض الصورة ${i + 1}`}
+                >
+                  <Image src={src} alt="" fill className="object-cover pointer-events-none" sizes="112px" />
+                </button>
+              ))}
             </div>
           )}
-        </div>
 
-        {/* شريط الصور المصغرة المحسّن */}
-        {hasImg && project.images.length > 1 && (
-          <div className="flex flex-none gap-3 overflow-x-auto border-b border-black/10 bg-paper p-4">
-            {project.images.map((src, i) => (
-              <button
-                key={src}
-                onClick={() => setIdx(i)}
-                className={`relative h-16 w-24 flex-none overflow-hidden rounded-xl border-2 transition-all ${
-                  i === idx ? "border-amber opacity-100 scale-105 shadow-md" : "border-transparent opacity-50 hover:opacity-90"
-                }`}
-                aria-label={`صورة ${i + 1}`}
-              >
-                <Image src={src} alt="" fill className="object-cover" />
-              </button>
-            ))}
+          {/* التفاصيل والمعلومات */}
+          <div className="bg-white p-5 md:p-8">
+            <div className="mb-5 flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-amber/20 bg-amber/10 px-3 py-1.5 text-xs font-bold text-amber-dim">
+                {catLabel}
+              </span>
+              <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">
+                {projectImages.length} صور
+              </span>
+            </div>
+
+            <h3 id="project-modal-title" className="font-display text-2xl font-black leading-tight text-navy md:text-3xl">
+              {project.title}
+            </h3>
+
+            <dl className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {project.client && (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <dt className="text-xs font-bold text-slate-500">العميل</dt>
+                  <dd className="mt-1 break-words text-sm font-bold text-navy">{project.client}</dd>
+                </div>
+              )}
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <dt className="text-xs font-bold text-slate-500">الموقع</dt>
+                <dd className="mt-1 text-sm font-bold text-navy">{project.loc || "جمهورية مصر العربية"}</dd>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 sm:col-span-2">
+                <dt className="text-xs font-bold text-slate-500">نطاق الأعمال</dt>
+                <dd className="mt-1 text-sm font-bold leading-relaxed text-navy">
+                  {project.meta || project.category}
+                </dd>
+              </div>
+            </dl>
+
+            <div className="mt-5">
+              <h4 className="mb-2 text-sm font-black text-navy">تفاصيل المشروع</h4>
+              <p className="text-sm leading-8 text-slate-700 md:text-base">
+                {project.description || "تم تنفيذ هذا المشروع بجهود فريق العهد الصناعي وفق أعلى معايير السلامة والجودة الهندسية."}
+              </p>
+            </div>
           </div>
-        )}
 
-        {/* تفاصيل المشروع */}
-        <div className="overflow-y-auto p-8 md:p-10">
-          <span className="mb-3.5 inline-block rounded-full bg-amber/10 px-3.5 py-1.5 text-[12.5px] font-bold text-amber-dim border border-amber/20">
-            {catLabel}
-          </span>
-          <h3 className="mb-2 text-[24px] font-bold text-navy font-display">{project.title}</h3>
-          {project.client && <div className="mb-1.5 text-[14px] font-semibold text-amber-dim">{project.client}</div>}
-          <div className="mb-4 text-[14px] text-slate-500 font-medium">📍 {project.loc}</div>
-          <p className="text-[15.5px] leading-[1.85] text-slate-700">{project.desc}</p>
         </div>
       </motion.div>
     </motion.div>
   );
 }
 
-export default function Projects() {
-  const [filter, setFilter] = useState<Category>("all");
-  const [selected, setSelected] = useState<Project | null>(null);
+export default function Projects({ initialProjects = [] }: { initialProjects?: DBProject[] }) {
+  const [filter, setFilter] = useState<string>("all");
+  const [selected, setSelected] = useState<DBProject | null>(null);
 
-  const filtered = PROJECTS.filter((p) => filter === "all" || p.cat === filter).filter(
-    (p) => !(filter === "all" && p.key === PROJECTS[0].key)
-  );
+  const filteredProjects = initialProjects.filter((p) => {
+    if (filter === "all") return true;
+    return p.category === filter || CATEGORIES.find((c) => c.key === filter)?.label === p.category;
+  });
+
+  const featuredProject = initialProjects.find((p) => p.featured) || initialProjects[0];
+  
+  const gridProjects = filter === "all" && featuredProject
+    ? filteredProjects.filter((p) => p.id !== featuredProject.id)
+    : filteredProjects;
 
   return (
-    <section id="projects" className="py-24 md:py-32 bg-gradient-to-b from-white to-concrete/30">
+    <section id="projects" className="py-24 md:py-32 bg-gradient-to-b from-white to-concrete/30" dir="rtl">
       <div className="mx-auto max-w-wrap px-6">
         <Reveal className="mb-14 max-w-xl">
           <div className="inline-flex items-center gap-2 rounded-full bg-amber/10 px-4 py-1.5 text-[13px] font-bold text-amber-dim border border-amber/20 mb-4 shadow-sm">
@@ -262,10 +398,9 @@ export default function Projects() {
           <h2 className="font-display mb-3.5 text-[28px] font-black tracking-tight text-navy md:text-[40px]">
             مشروعات صناعية <span className="text-amber-dim">رائدة ومنفذة</span>
           </h2>
-          <p className="text-[16px] text-slate-600">اضغط على أي مشروع لعرض الصور والتفاصيل الهندسية الكاملة.</p>
+          <p className="text-[16px] text-slate-600">اضغط على أي مشروع لعرض التفاصيل الهندسية والصور الكاملة.</p>
         </Reveal>
 
-        {/* أزرار الفلترة */}
         <LayoutGroup>
           <Reveal delay={0.1} className="mb-12 flex flex-wrap gap-3">
             {CATEGORIES.map((c) => (
@@ -289,21 +424,19 @@ export default function Projects() {
           </Reveal>
         </LayoutGroup>
 
-        {filter === "all" && (
-          <FeaturedProject project={PROJECTS[0]} onOpen={setSelected} />
+        {filter === "all" && featuredProject && (
+          <FeaturedProject project={featuredProject} onOpen={setSelected} />
         )}
 
-        {/* شبكة المشاريع */}
         <motion.div layout className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           <AnimatePresence mode="popLayout">
-            {filtered.map((p, i) => (
-              <ProjectCard key={p.key} p={p} index={i} onOpen={setSelected} />
+            {gridProjects.map((p, i) => (
+              <ProjectCard key={p.id} p={p} index={i} onOpen={setSelected} />
             ))}
           </AnimatePresence>
         </motion.div>
       </div>
 
-      {/* النافذة المنبثقة (Modal) لعرض صور المشروع */}
       <AnimatePresence>
         {selected && <ProjectModal project={selected} onClose={() => setSelected(null)} />}
       </AnimatePresence>

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "العهد للمقاولات العامة | ALAHD Industrial General Contracting",
+  title: "العهد الصناعي للمقاولات العامة | AL AHD Industrial General Contracting",
   description:
-    "شركة العهد للمقاولات العامة — تنفيذ الصوامع والمطاحن، المصانع الغذائية، خطوط الإنتاج وأعمال الـ MEP، الأحواض الكيميائية، والأرضيات الصناعية في مصر.",
+    "شركة العهد الصناعي للمقاولات العامة — تنفيذ الصوامع والمطاحن، المصانع الغذائية، خطوط الإنتاج وأعمال الـ MEP، الأحواض الكيميائية، والأرضيات الصناعية في مصر.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

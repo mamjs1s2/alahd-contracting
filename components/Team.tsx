@@ -25,7 +25,7 @@ export default function Team() {
             >
               <Image
                 src={src}
-                alt={`فريق العهد للمقاولات في الموقع ${i + 1}`}
+                alt={`فريق العهد الصناعي للمقاولات العامة في الموقع ${i + 1}`}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-110"
               />

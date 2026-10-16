@@ -29,12 +29,12 @@ export default function About() {
               عن الشركة
             </div>
 
-            <h2 className="font-display mb-5 text-[28px] font-black tracking-tight text-navy sm:text-[36px] md:text-[40px] leading-[1.2]">
+            <h2 className="font-display mb-5 text-[24px] font-black tracking-tight text-navy sm:text-[32px] md:text-[36px] leading-[1.2]">
               خبرة ميدانية متقدمة في قلب <span className="text-amber-dim">الصناعة الثقيلة</span>
             </h2>
 
-            <p className="text-[17px] leading-[1.9] text-slate-700 font-normal">
-              <strong className="text-navy font-semibold">العهد للمقاولات العامة</strong> شركة مصرية رائدة متخصصة في تنفيذ المشروعات الصناعية الكبرى، من الصوامع والمطاحن إلى خطوط الإنتاج ومحطات المعالجة الكيميائية. نعمل مع كبرى الكيانات الصناعية والغذائية داخل مصر، ملتزمين بأعلى معايير السلامة والجودة العالمية في كل موقع.
+            <p className="text-[16px] leading-[1.9] text-slate-700 font-normal">
+              <strong className="text-navy font-semibold">العهد الصناعي للمقاولات العامة</strong> شركة مصرية رائدة متخصصة في تنفيذ المشروعات الصناعية الكبرى، من الصوامع والمطاحن إلى خطوط الإنتاج ومحطات المعالجة الكيميائية. نعمل مع كبرى الكيانات الصناعية والغذائية داخل مصر، ملتزمين بأعلى معايير السلامة والجودة العالمية في كل موقع.
             </p>
 
             {/* النقاط الرئيسية */}
@@ -67,7 +67,7 @@ export default function About() {
             <div className="relative overflow-hidden rounded-3xl border border-slate-200/85 shadow-2xl shadow-navy/15 bg-slate-900 group">
               <div className="absolute inset-0 bg-gradient-to-t from-navy/40 via-transparent to-transparent z-10 pointer-events-none" />
               <Image
-                src="/images/silos/3.jpg"
+                src="/images/silos/2.jpg"
                 alt="مجسم إنشائي ثلاثي الأبعاد لمشروع صوامع مطحن المجد"
                 width={900}
                 height={620}

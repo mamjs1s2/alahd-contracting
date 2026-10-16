@@ -1,3 +1,4 @@
+import { createClient } from "@/lib/supabase/server";
 import Grain from "@/components/Grain";
 import ScrollProgress from "@/components/ScrollProgress";
 import Header from "@/components/Header";
@@ -14,7 +15,18 @@ import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
 
-export default function Home() {
+// إعادة إلغاء الكاش لضمان ظهور المشروع فور إضافته من لوحة التحكم
+export const revalidate = 0;
+
+export default async function Home() {
+  const supabase = await createClient();
+
+  // جلب كافة المشاريع من Supabase مرتبة بحسب الأحدث
+  const { data: projects } = await supabase
+    .from("projects")
+    .select("*")
+    .order("created_at", { ascending: false });
+
   return (
     <>
       <Grain />
@@ -27,7 +39,7 @@ export default function Home() {
         <About />
         <Services />
         <Process />
-        <Projects />
+        <Projects initialProjects={projects || []} />
         <Team />
         <Clients />
         <Contact />

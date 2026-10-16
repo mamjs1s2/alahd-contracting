@@ -36,7 +36,7 @@ export default function Header() {
             <Image src="/images/brand/alahd-logo.png" alt="AL AHD" fill className="object-contain" priority />
           </span>
           <span className="font-display leading-tight">
-            <span className="block text-[19px] font-black">العهد للمقاولات</span>
+            <span className="block text-[19px] font-black">العهد الصناعي للمقاولات العامة</span>
             <span dir="ltr" className="block text-[10.5px] font-normal tracking-wide text-slate-300">
               AL AHD Industrial General Contracting
             </span>

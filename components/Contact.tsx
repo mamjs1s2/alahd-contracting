@@ -1,165 +1,40 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence, useMotionTemplate, useMotionValue } from "framer-motion";
+import { motion } from "framer-motion";
 import Reveal from "./Reveal";
-import Magnetic from "./Magnetic";
 import Spotlight from "./Spotlight";
-
-const CARDS = [
-  {
-    key: "address",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
-        <path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21Z" />
-        <circle cx="12" cy="9.5" r="2.5" />
-      </svg>
-    ),
-    label: "العنوان الرئيسي",
-    value: "برج المنار، طريق كورنيش النيل، بنها، مصر",
-    copy: null,
-    href: "https://maps.google.com/?q=30.48288932165149,31.1843318073964",
-  },
-  {
-    key: "phone",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
-        <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .8 3a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.4c1 .4 2 .7 3 .8a2 2 0 0 1 1.7 2Z" />
-      </svg>
-    ),
-    label: "اتصال هاتفي مباشر",
-    value: "0133 194775",
-    copy: "0133194775",
-    href: "tel:0133194775",
-  },
-  {
-    key: "email",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
-        <rect x="3" y="5" width="18" height="14" rx="2" />
-        <path d="m3 7 9 6 9-6" />
-      </svg>
-    ),
-    label: "البريد الإلكتروني",
-    value: "info@alahd-contracting.com",
-    copy: "info@alahd-contracting.com",
-    href: "mailto:info@alahd-contracting.com",
-  },
-  {
-    key: "linkedin",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
-        <rect x="2" y="9" width="4" height="12" />
-        <circle cx="4" cy="4" r="2" />
-        <path d="M10 9h4v2c.7-1.3 2-2.3 4-2.3 3 0 4 2 4 5.3V21h-4v-5.5c0-1.5-.5-2.5-1.8-2.5-1 0-1.6.7-1.9 1.4-.1.3-.1.7-.1 1.1V21h-4V9Z" />
-      </svg>
-    ),
-    label: "صفحة لينكدإن",
-    value: "al-ahad-industrial-general-contracting",
-    copy: null,
-    href: "https://www.linkedin.com/company/al-ahad-industrial-general-contracting",
-  },
-];
-
-function InteractiveCard({ card }: { card: (typeof CARDS)[number] }) {
-  const [copied, setCopied] = useState(false);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  function handleMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
-    const { left, top } = currentTarget.getBoundingClientRect();
-    mouseX.set(clientX - left);
-    mouseY.set(clientY - top);
-  }
-
-  const handleClick = async (e: React.MouseEvent) => {
-    if (card.copy) {
-      e.preventDefault();
-      try {
-        await navigator.clipboard.writeText(card.copy);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      } catch {
-        if (card.href) window.location.href = card.href;
-      }
-    }
-  };
-
-  const spotlightMask = useMotionTemplate`radial-gradient(220px circle at ${mouseX}px ${mouseY}px, rgba(211, 164, 58, 0.25), transparent 80%)`;
-
-  const cardContent = (
-    <div
-      onMouseMove={handleMouseMove}
-      className="group relative overflow-hidden flex items-center gap-4 rounded-3xl border border-white/10 bg-navy-light/60 backdrop-blur-md p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-amber/50 shadow-xl shadow-black/20"
-    >
-      <motion.div
-        className="pointer-events-none absolute -inset-px rounded-3xl opacity-0 transition duration-300 group-hover:opacity-100"
-        style={{ background: spotlightMask }}
-      />
-
-      <div className="relative z-10 flex h-12 w-12 flex-none items-center justify-center rounded-2xl bg-amber/10 text-amber transition-all duration-300 group-hover:bg-amber group-hover:text-navy group-hover:scale-110 shadow-sm border border-amber/20">
-        <span className="h-5 w-5">{card.icon}</span>
-      </div>
-
-      <div className="relative z-10 min-w-0 flex-1">
-        <span className="font-display block text-[13px] font-bold text-slate-400 mb-0.5">{card.label}</span>
-        <span
-          dir={card.key === "phone" || card.key === "email" ? "ltr" : undefined}
-          className="block truncate text-[14.5px] font-semibold text-white transition-colors group-hover:text-amber text-right"
-        >
-          {card.value}
-        </span>
-      </div>
-
-      {card.copy && (
-        <span className="relative z-10 text-[11px] text-amber/80 opacity-0 group-hover:opacity-100 transition-opacity bg-amber/10 px-2.5 py-1 rounded-md border border-amber/20 shrink-0 font-medium">
-          {copied ? "تم النسخ ✓" : "اضغط للنسخ"}
-        </span>
-      )}
-
-      {card.copy && copied && (
-        <motion.span
-          initial={{ opacity: 0, y: 10, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber px-3.5 py-1 text-[11px] font-black text-navy shadow-lg z-30"
-        >
-          تم نسخ النص بنجاح ✓
-        </motion.span>
-      )}
-    </div>
-  );
-
-  if (card.href && !card.copy) {
-    return (
-      <a href={card.href} target="_blank" rel="noopener noreferrer" className="block w-full">
-        {cardContent}
-      </a>
-    );
-  }
-
-  return (
-    <button onClick={handleClick} className="block w-full text-right cursor-pointer">
-      {cardContent}
-    </button>
-  );
-}
+import { isValidContactName, normalizeContactName, normalizeEgyptianMobile } from "@/lib/contact-validation";
 
 export default function Contact() {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const [error, setError] = useState<string | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
 
     const form = e.currentTarget;
     const data = new FormData(form);
+    const name = normalizeContactName(String(data.get("name") ?? ""));
+    const phone = normalizeEgyptianMobile(String(data.get("phone") ?? ""));
+    const validName = isValidContactName(name);
+
+    setNameError(validName ? null : "اكتب الاسم الأول واسم العائلة بحروف عربية أو إنجليزية.");
+    setPhoneError(phone ? null : "أدخل رقم هاتف مصري صحيحًا يبدأ بـ 010 أو 011 أو 012 أو 015.");
+
+    if (!validName || !phone) {
+      form.querySelector<HTMLInputElement>(!validName ? '[name="name"]' : '[name="phone"]')?.focus();
+      return;
+    }
+
+    setLoading(true);
     const payload = {
-      name: data.get("name"),
-      phone: data.get("phone"),
+      name,
+      phone,
       email: data.get("email"),
       projectType: data.get("projectType"),
       message: data.get("message"),
@@ -173,7 +48,13 @@ export default function Contact() {
       });
       const result = await res.json();
       if (!res.ok || result.error) {
-        setError("حدث خطأ أثناء إرسال الطلب. برجاء المحاولة لاحقًا أو التواصل هاتفيًا.");
+        if (result.error === "invalid-name") {
+          setNameError("اكتب الاسم الأول واسم العائلة بحروف عربية أو إنجليزية.");
+        } else if (result.error === "invalid-phone") {
+          setPhoneError("أدخل رقم هاتف مصري صحيحًا يبدأ بـ 010 أو 011 أو 012 أو 015.");
+        } else {
+          setError("حدث خطأ أثناء إرسال الطلب. برجاء المحاولة لاحقًا أو التواصل هاتفيًا.");
+        }
       } else {
         setFormSubmitted(true);
         form.reset();
@@ -207,13 +88,6 @@ export default function Contact() {
           </p>
         </Reveal>
 
-        {/* شبكة البطاقات التفاعلية */}
-        <Reveal delay={0.1} className="mb-12 grid grid-cols-1 gap-5 sm:grid-cols-2">
-          {CARDS.map((c) => (
-            <InteractiveCard key={c.key} card={c} />
-          ))}
-        </Reveal>
-
         {/* نموذج إرسال الطلب الفعلي (Interactive Contact Form) */}
         <Reveal delay={0.12} className="mb-12">
           <div className="relative overflow-hidden rounded-3xl border border-white/15 bg-navy-light/70 p-8 md:p-12 shadow-2xl backdrop-blur-md">
@@ -234,7 +108,7 @@ export default function Contact() {
                   ✓
                 </div>
                 <h4 className="text-xl font-bold text-white mb-2">تم إرسال طلبك بنجاح!</h4>
-                <p className="text-slate-300 text-sm">شكراً لتواصلك مع شركة العهد للمقاولات. سيتواصل معك مهندس مختص خلال يوم عمل واحد.</p>
+                <p className="text-slate-300 text-sm">شكراً لتواصلك مع شركة العهد الصناعي للمقاولات العامة. سيتواصل معك مهندس مختص خلال يوم عمل واحد.</p>
                 <button 
                   onClick={() => setFormSubmitted(false)}
                   className="mt-6 rounded-full bg-white/10 px-6 py-2.5 text-xs font-bold text-white hover:bg-white/20 transition-all"
@@ -245,14 +119,21 @@ export default function Contact() {
             ) : (
               <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-2">الاسم الكريم *</label>
+                  <label className="block text-xs font-bold text-slate-300 mb-2">الاسم *</label>
                   <input
                     required
                     type="text"
                     name="name"
-                    placeholder="أدخل اسمك أو صفتك"
+                    autoComplete="name"
+                    minLength={4}
+                    maxLength={60}
+                    placeholder="الاسم الأول واسم العائلة"
+                    aria-invalid={Boolean(nameError)}
+                    aria-describedby={nameError ? "contact-name-error" : undefined}
+                    onChange={() => setNameError(null)}
                     className="w-full rounded-xl border border-white/10 bg-navy/60 px-4 py-3.5 text-sm text-white placeholder-slate-500 focus:border-amber focus:outline-none transition-all"
                   />
+                  {nameError && <p id="contact-name-error" className="mt-2 text-xs text-red-300">{nameError}</p>}
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-2">رقم الهاتف *</label>
@@ -260,9 +141,16 @@ export default function Contact() {
                     required
                     type="tel"
                     name="phone"
-                    placeholder="01xxxxxxxxx"
+                    autoComplete="tel"
+                    inputMode="tel"
+                    maxLength={20}
+                    placeholder="01xxxxxxxxx أو +20 1xxxxxxxxx"
+                    aria-invalid={Boolean(phoneError)}
+                    aria-describedby={phoneError ? "contact-phone-error" : undefined}
+                    onChange={() => setPhoneError(null)}
                     className="w-full rounded-xl border border-white/10 bg-navy/60 px-4 py-3.5 text-sm text-white placeholder-slate-500 focus:border-amber focus:outline-none transition-all"
                   />
+                  {phoneError && <p id="contact-phone-error" className="mt-2 text-xs text-red-300">{phoneError}</p>}
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-2">البريد الإلكتروني</label>
@@ -326,7 +214,7 @@ export default function Contact() {
             </div>
             <div className="h-[380px] w-full overflow-hidden rounded-2xl filter contrast-125 saturate-50 hover:saturate-100 transition-all duration-500">
               <iframe
-                title="موقع شركة العهد للمقاولات ببنها"
+                title="موقع شركة العهد الصناعي للمقاولات العامة ببنها"
                 src={`https://maps.google.com/maps?q=30.48288932165149,31.1843318073964&z=16&output=embed`}
                 width="100%"
                 height="100%"

@@ -40,7 +40,7 @@ export default function Hero() {
         <div className="animate-ken-burns absolute inset-0">
           <Image
             src="/images/silos/2.jpg"
-            alt="موقع تنفيذ مشروع صناعي - العهد للمقاولات"
+            alt="موقع تنفيذ مشروع صناعي - العهد الصناعي للمقاولات العامة"
             fill
             priority
             className="object-cover object-[center_30%] saturate-90 contrast-105"
@@ -68,24 +68,14 @@ export default function Hero() {
         animate="show"
         className="relative z-10 mx-auto w-full max-w-wrap px-6"
       >
-        <motion.div
-          variants={item}
-          className="mb-4 inline-flex items-center gap-2 rounded-full bg-amber/15 px-4 py-1.5 text-[13px] font-bold text-amber-light"
-        >
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="animate-ping-soft absolute inline-flex h-full w-full rounded-full bg-amber" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber" />
-          </span>
-          مقاولات عامة · مشروعات صناعية كبرى
-        </motion.div>
         <motion.h1
-          variants={item}
-          className="font-display max-w-[16ch] text-[34px] font-black leading-[1.12] md:text-[58px]"
-        >
-          نبني البنية الصناعية الثقيلة لمصانع مصر
-        </motion.h1>
+  variants={item}
+  className="font-display max-w-[14ch] text-[24px] font-black leading-[1.4] md:leading-[1.5] md:text-[58px]"
+>
+  نبني البنية الصناعية الثقيلة لمصانع مصر
+</motion.h1>
         <motion.p variants={item} className="mt-5 max-w-[56ch] text-[16px] text-slate-200 md:text-[19px]">
-          شركة العهد للمقاولات العامة تنفّذ الصوامع والمطاحن، خطوط الإنتاج وأعمال الـMEB، أحواض الكيماويات، والأرضيات
+          شركة العهد الصناعي للمقاولات العامة تنفّذ الصوامع والمطاحن، خطوط الإنتاج وأعمال الـMEB， أحواض الكيماويات، والأرضيات
           الصناعية — من الأساسات وحتى التسليم النهائي.
         </motion.p>
         <motion.div variants={item} className="mt-8 flex flex-wrap gap-4">
