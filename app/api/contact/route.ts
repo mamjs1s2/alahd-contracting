@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import nodemailer from "nodemailer";
+import { createClient } from "@supabase/supabase-js";
 import { isValidContactName, normalizeContactName, normalizeEgyptianMobile } from "@/lib/contact-validation";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,40 +30,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "invalid-phone" }, { status: 400 });
     }
 
-    const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, CONTACT_TO } = process.env;
+    // حفظ البيانات مباشرة في جدول contact_messages في Supabase
+    const { error: dbError } = await supabase.from("contact_messages").insert([
+      {
+        name,
+        phone,
+        email: email || null,
+        project_type: projectType,
+        message: message || null,
+      },
+    ]);
 
-    if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !CONTACT_TO) {
-      return NextResponse.json({ error: "server-not-configured" }, { status: 500 });
+    if (dbError) {
+      console.error("Database insert error:", dbError.message);
+      return NextResponse.json({ error: "send-failed" }, { status: 500 });
     }
-
-    const transporter = nodemailer.createTransport({
-      host: SMTP_HOST,
-      port: Number(SMTP_PORT),
-      secure: Number(SMTP_PORT) === 465,
-      auth: { user: SMTP_USER, pass: SMTP_PASS },
-    });
-
-    await transporter.sendMail({
-      from: `"نموذج تواصل الموقع" <${SMTP_USER}>`,
-      to: CONTACT_TO,
-      replyTo: email || undefined,
-      subject: `طلب تواصل جديد من ${name}`,
-      html: `
-        <div style="font-family:sans-serif;direction:rtl;text-align:right">
-          <h2>طلب تواصل جديد — موقع العهد الصناعي للمقاولات العامة</h2>
-          <p><b>الاسم:</b> ${name}</p>
-          <p><b>الهاتف:</b> ${phone}</p>
-          <p><b>البريد الإلكتروني:</b> ${email || "غير محدد"}</p>
-          <p><b>نوع المشروع:</b> ${projectType}</p>
-          <p><b>تفاصيل الطلب:</b></p>
-          <p>${(message || "لا توجد تفاصيل إضافية").replace(/\n/g, "<br/>")}</p>
-        </div>
-      `,
-    });
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("contact form send failed", err);
+    console.error("contact form submission failed", err);
     return NextResponse.json({ error: "send-failed" }, { status: 500 });
   }
 }
